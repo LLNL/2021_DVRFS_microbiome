@@ -10,7 +10,7 @@ These scripts (IM#: LLNL-CODE-823962) document the code used to analyze the Deat
 - 08.EcologicalProcess.r : Figure 5, Figure S10, Table S9<br>
 - Geochem.r : Figure 2, Figure S4, Table S2, Table S3, Table S4, Table S5<br>
 
-Merino, N., Jackson, T.R., Campbell, J.H., Kersting, A.B., Sackett, J., Zavarin, M., Hamilton-Brehm, S.D., Moser, D.P. (2021)
+Merino, N., Jackson, T.R., Campbell, J.H., Kersting, A.B., Sackett, J., Fisher, J.C., Bruckner, J.C. Zavarin, M., Hamilton-Brehm, S.D., Moser, D.P. (2021)
 
 Open Source Distribution, under the terms of the LGPL, v3.0 license.<br>
 These code will not be updated once the manuscript has been accepted. 

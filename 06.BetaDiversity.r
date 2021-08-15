@@ -1,6 +1,12 @@
 # 06. Beta Diversity
 ## Figure 3, Figure S6, Figure S7, Figure S8, Table 1
 
+## References
+### Martino, C.; Morton, J. T.; Marotz, C. A.; Thompson, L. R.; Tripathi, A.; Knight, R.; Zengler, K. A Novel Sparse Compositional Technique Reveals Microbial Perturbations. mSystems 2019, 4 (1). https://doi.org/10.1128/mSystems.00016-19.
+### Gloor, G. B.; Macklaim, J. M.; Pawlowsky-Glahn, V.; Egozcue, J. J. Microbiome Datasets Are Compositional: And This Is Not Optional. Front. Microbiol. 2017, 8. https://doi.org/10.3389/fmicb.2017.02224.
+### Silverman, J. D.; Washburne, A. D.; Mukherjee, S.; David, L. A. A Phylogenetic Transform Enhances Analysis of Compositional Microbiota Data. eLife 2017, 6, e21887. https://doi.org/10.7554/eLife.21887.
+
+
 ## Set Path
 beta <- file.path(paste(path_phy, "/Beta_diversity", sep=""))
 dir.create(beta, showWarnings=FALSE)
@@ -8,6 +14,11 @@ setwd(beta)
 
 ## Phyloseq object
 obj_ps
+
+## Phyloseq object of subset samples (remove Batch 2 sequenced and tunnel-collected samples)
+obj_ps_sub <- subset_samples(obj_ps_log, Sample_abbrev != "RM1" & Sample_abbrev != "RM2" & Sample_abbrev != "DV1" & Sample_abbrev != "OV1" & Sample_abbrev != "OV2" & Sample_abbrev != "AV1" & Sample_abbrev != "AV2" & Sample_abbrev != "AV3" & Sample_abbrev != "YF2") #For NMDS, also removed DV3 due to stress issues in WUniFrac
+obj_ps_sub <- prune_taxa(taxa_sums(obj_ps_sub) > 0, obj_ps_sub) # remove OTUs with zero count
+obj_ps_sub
 
 ## Set up theme
 plot_theme <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
@@ -29,6 +40,8 @@ plot_theme <- theme(panel.background = element_rect(fill = "white", colour = "bl
 plot_guide <- guides(fill = guide_legend(order=1, override.aes = list(shape = 21, alpha=1, size = 5)),
     shape = guide_legend(order=2, override.aes = list(size = 5, color="black", alpha=1)),
     color = FALSE)
+
+loc_sec_color = c("Amargosa Valley" = "#043378", "Ash Meadows" = "#E50006", "Death Valley" = "#38AA31", "Frenchman and Yucca Flat" = "#1187A5", "Pahute Mesa" = "#7E478D", "Rainier Mesa" = "#FB9E7F", "Spring Mountains" = "#9B0020", "Oasis Valley" = "#9DA7A7")
 
 ## Preliminary ordination plots
 ### unpound the distance want to use
@@ -62,7 +75,7 @@ plot.ord <- ggplot(pdataframe, aes(Axis_1, Axis_2), color = color, title = "Ordi
 save_file_plot <- paste(beta, "/multiple.ordination.obj_ps.", color, ".", dist, ".pdf", sep="")
 ggsave(save_file_plot, scale = 1, width = 7, height = 5, units = c("in"), dpi = 300)
 
-## NMDS Weighted UniFrac
+##==================== NMDS Weighted UniFrac (repeat this for subset of samples obj_ps_sub)
 ordi_wunifrac_NMDS = ordinate(obj_ps, method="NMDS", distance="wunifrac")
 ordi_wunifrac_NMDS
 stressplot(ordi_wunifrac_NMDS)
@@ -78,7 +91,7 @@ hull <- ordi_data %>%
   group_by(Loc_sec) %>%
   slice(chull(MDS1, MDS2))
 
-### Plot NMDS wUniFrac (Figure 3B, Figure S6B)
+### Plot NMDS wUniFrac (Figure 3B, Figure S6B and S6D)
 nmds_whull <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") + 
     geom_polygon(data = hull, alpha = 0.1, aes(color=Loc_sec, fill=Loc_sec)) +
@@ -106,7 +119,7 @@ nmds_wuni_rock <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") +
     plot_theme + plot_guide
 
-### Plot with Piper group (Figure S9B)
+### Plot with Piper group (Figure S7B)
 hull <- ordi_data %>%
   group_by(Piper_group3) %>%
   slice(chull(MDS1, MDS2))
@@ -136,7 +149,7 @@ nmds_wuni_seq <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") + 
     plot_theme + plot_guide
 
-### Plot with Sequence Batch (Figure S7D)
+### Plot with Sampling method (Figure S7D)
 hull <- ordi_data %>%
   group_by(Sampling_method) %>%
   slice(chull(MDS1, MDS2))
@@ -191,7 +204,7 @@ nmds_wuni_temp <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
 ### Plot with Depth (Figure S7H)
 nmds_wuni_depth <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") + 
-    geom_point(shape=21, size = 5, color="black", aes(fill=Depth_sampling_m)) +
+    geom_point(shape=21, size = 5, color="black", aes(fill=relative_depth)) +
     xlab(paste("NMDS1")) +
     ylab(paste("NMDS2")) +
     scale_fill_gradient2(name = "Depth (m)", breaks = c(0, 400, 800, 1200), limits = c(0,1200), low="#f72585", mid="#cdb4db", high="#023e8a", midpoint=600) + 
@@ -212,7 +225,7 @@ both <- plot_grid(nmds_wuni_rock + theme(legend.position="none"),
 save_file <- paste("Combo_for_supplementary_wunifrac.svg", sep="")
 ggsave(save_file, path = beta, plot = both, scale = 1, width = 15, height = 10, units = c("in"), dpi = 300)
 
-## NMDS UniFrac
+##==================== NMDS UniFrac (repeat this for subset of samples obj_ps_sub)
 ordi_unifrac_NMDS = ordinate(obj_ps, method="NMDS", distance="unifrac")
 ordi_unifrac_NMDS
 stressplot(ordi_unifrac_NMDS)
@@ -225,6 +238,7 @@ alpha.div.metadata2$Loc_sec <- gsub('_',' ', alpha.div.metadata2$Loc_sec)
 ordi_data <- merge(alpha.div.metadata2, ordi.scores, by = c('Sample_abbrev'))
 ordi_data$Loc_sec <- factor(ordi_data$Loc_sec, ordered = TRUE, levels = c("Amargosa Valley", "Ash Meadows", "Death Valley", "Frenchman and Yucca Flat", "Pahute Mesa", "Rainier Mesa", "Spring Mountains", "Oasis Valley"))
 
+### Plot NMDS UniFrac (Figure 3A, Figure S6A and S6C)
 ### Calculate the hulls for each group
 hull <- ordi_data %>%
   group_by(Loc_sec) %>%
@@ -242,28 +256,30 @@ nmds_uni_hull <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
 
 nmds_uni_hull_label <- nmds_uni_hull + geom_label_repel(aes(label = Sample_abbrev), box.padding = 0.35, point.padding = 0.5, segment.color = 'grey50')
 
-## Plot both NMDS
+##==================== Plot both NMDS (Figure 3, S6)
 both <- plot_grid(nmds_uni_hull + theme(legend.position="none"),
                  nmds_whull + theme(legend.position="none"), 
                  ncol=2, align = "v", axis="b")
 save_file <- paste("wuni.unifrac.nmds.svg", sep="")
 ggsave(save_file, path = beta, plot = both, scale = 1, width = 10, height = 5, units = c("in"), dpi = 300)
 
-both_label <- plot_grid(nmds_uni_hull_label + theme(legend.position="none"),
-                 nmds_whull_label + theme(legend.position="none"), 
-                 ncol=2, align = "v", axis="b")
+both_label <- plot_grid(nmds_uni_whull_label + theme(legend.position="none"),
+                        nmds_whull_label + theme(legend.position="none"),
+                        nmds_uni_whull_sub + theme(legend.position="none"),
+                        nmds_whull_sub + theme(legend.position="none"),
+                        ncol=2, align = "v", axis="b")
 save_file <- paste("wuni.unifrac.nmds.label.svg", sep="")
 ggsave(save_file, path = beta, plot = both_label, scale = 1, width = 10, height = 5, units = c("in"), dpi = 300)
 
-## Statistics
+##==================== Statistics (repeat this for subset of samples obj_ps_sub)
 ### https://microbiome.github.io/tutorials/PERMANOVA.html
 ### https://mibwurrepo.github.io/Microbial-bioinformatics-introductory-course-Material-2018/multivariate-comparisons-of-microbial-community-composition.html
 
 ### Obtain the distance matrix
-uwUF.dist = UniFrac(obj_ps_rel, weighted=FALSE, normalized=TRUE)
+uwUF.dist = UniFrac(obj_ps, weighted=FALSE, normalized=TRUE)
 head(uwUF.dist)
 
-wUF.dist = UniFrac(obj_ps_rel, weighted=TRUE, normalized=TRUE)
+wUF.dist = UniFrac(obj_ps, weighted=TRUE, normalized=TRUE)
 head(wUF.dist)
 
 ### Organize data
@@ -299,8 +315,8 @@ write.csv(results_w, "NMDS_wunifrac_beta_diversity_adonis_results.csv")
 
 ### Test specific questions (Table 1)
 #### location-type variables
-adonis2(uwUF.dist~metadata_stats$Loc_sec+metadata_stats$Depth_sampling_m+metadata_stats$Well_spring+metadata_stats$Sequence_batch+metadata_stats$Sampling_method, permutations=999, by="margin")
-adonis2(wUF.dist~metadata_stats$Loc_sec+metadata_stats$Depth_sampling_m+metadata_stats$Well_spring+metadata_stats$Sequence_batch+metadata_stats$Sampling_method, permutations=999, by="margin")
+adonis2(uwUF.dist~metadata_stats$Loc_sec+metadata_stats$relative_depth+metadata_stats$Well_spring+metadata_stats$Sequence_batch+metadata_stats$Sampling_method, permutations=999, by="margin")
+adonis2(wUF.dist~metadata_stats$Loc_sec+metadata_stats$relative_depth+metadata_stats$Well_spring+metadata_stats$Sequence_batch+metadata_stats$Sampling_method, permutations=999, by="margin")
 
 #### geochemical-type variables
 adonis2(uwUF.dist~metadata_stats$Temp_C+metadata_stats$rock_type+metadata_stats$pH+metadata_stats$tritium_BqL_fct+metadata_stats$TOC_mgCL+metadata_stats$Sequence_batch+metadata_stats$Sampling_method, permutations=999, by="margin")
@@ -319,7 +335,7 @@ permutest(betadisper(uwUF.dist, metadata_stats$Loc_sec), pairwise = TRUE)
 ### ANOSIM for categorical variables (change the variable)
 anosim(wUF.dist, metadata_stats$tritium_BqL_fct, permutations = 999)
 
-## DEICODE RPCA
+##==================== DEICODE RPCA (repeat this for subset of samples obj_ps_sub)
 deicode <- file.path(paste(beta, "/deicode_RPCA", sep=""))
 dir.create(deicode, showWarnings=FALSE)
 setwd(deicode)
@@ -410,33 +426,199 @@ rpca$data$ProportionExplained[3]
 xaxis_text <- paste("PC1: 72.5%")
 yaxis_text <- paste("PC2: 27.5%")
 
+### Plot ordination (Figure S8A; subset of samples Figure S8C)
 #### Calculate the hulls for each group
 hull <- rpca_data_num %>%
   group_by(Loc_sec) %>%
   slice(chull(PC1, PC2))
-
-### Plot ordination (Figure S8)
+  
 rpca_hull <- ggplot(rpca_data_num, aes(x=PC1, y = PC2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") + 
     geom_polygon(data = hull, alpha = 0.1, aes(color=Loc_sec, fill=Loc_sec)) +
     geom_point(size=3, color="black", shape=21, aes(fill=Loc_sec)) +
     xlab(xaxis_text) +
     ylab(yaxis_text) +
-    scale_fill_lancet(name = "Location") + 
-    scale_color_lancet(name = "") + 
+    scale_fill_manual(name = "Location", values = loc_sec_color) +
+    scale_color_manual(name = "", values = loc_sec_color) +
     plot_theme + plot_guide
 
 save_file <- paste("RPCA_draft.svg", sep="")
 ggsave(save_file, path = deicode, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
 
-## Statistics on DEICODE RPCA
-### Import distance matrix
-rpca_dist <- read_qza("distance_auto_components.qza")
-rpca_dist.obj <- rpca_dist$data
-rpca_dist.obj <- as.dist(rpca_dist.obj, diag = FALSE, upper = FALSE)
+### Plot ordination (Figure S8B)
+#### Calculate the hulls for each group
+hull <- rpca_data_num %>%
+  group_by(Sequence_batch) %>%
+  slice(chull(PC1, PC2))
 
-### Adonis
-#### location-type variables
-adonis2(rpca_dist.obj~metadata_stats$Loc_sec+metadata_stats$Depth_sampling_m+metadata_stats$Well_spring+metadata_stats$Sequence_batch+metadata_stats$Sampling_method, permutations=999, by="margin")
-#### geochemical-type variables
-adonis2(rpca_dist.obj~metadata_stats$Temp_C+metadata_stats$rock_type+metadata_stats$pH+metadata_stats$tritium_BqL_fct+metadata_stats$TOC_mgCL+metadata_stats$Sequence_batch+metadata_stats$Sampling_method, permutations=999, by="margin")
+rpca_hull_Seq <- ggplot(rpca_data_num, aes(x=PC1, y = PC2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+    geom_polygon(data = hull, alpha = 0.1, aes(color=Sequence_batch, fill=Sequence_batch)) +
+    geom_point(size=3, color="black", shape=21, aes(fill=Sequence_batch)) +
+    xlab(xaxis_text) +
+    ylab(yaxis_text) +
+    scale_fill_manual(name = "Sequence batch", values = c("black", "red")) +
+    scale_color_manual(name = "", values = c("black", "red")) +
+    plot_theme + plot_guide
+rpca_hull_Seq
+
+save_file <- paste("rpca_draft_sequenceBatch.svg", sep="")
+ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
+
+##==================== CLR transformation (repeat this for subset of samples obj_ps_sub)
+set.seed(200810)
+
+### Obtain the OTU and metadata table
+otu_table <- as.data.frame(otu_table(obj_ps))
+metadata <- as.data.frame(as.matrix(sample_data(obj_ps)))
+
+### Transform the OTU table and replace 0 values with an estimate
+f.n0 <- cmultRepl(t(otu_table), method="CZM", label=0, output="p-counts")
+
+### CLR Transformation
+f.clr <- codaSeq.clr(f.n0, IQLR=FALSE)
+
+### Add clr to phyloseq object
+ps_clr <- phyloseq(
+    otu_table(t(f.clr), taxa_are_rows = TRUE),
+    sample_data(sample_data(obj_ps)),
+    phy_tree(filt_tree),
+    tax_table(tax_table(obj_ps))
+)
+ps_clr
+
+### Ordinate
+ordi = ordinate(ps_clr, "PCoA", "euclidean")
+
+### Get scores and add metadata
+ordi.scores <- as.data.frame(ordi$vectors)
+ordi.scores$Sample_abbrev <- rownames(ordi.scores)
+ordi_data <- merge(alpha.div.metadata2, ordi.scores, by = c('Sample_abbrev'))
+ordi_data$Loc_sec <- gsub("_", " ", ordi_data$Loc_sec)
+ordi_data$Loc_sec <- factor(ordi_data$Loc_sec, ordered = TRUE, levels = c("Amargosa Valley", "Ash Meadows", "Death Valley", "Frenchman and Yucca Flat", "Pahute Mesa", "Rainier Mesa", "Spring Mountains", "Oasis Valley"))
+
+### Plot ordination (Figure S8D; subset of samples Figure S8F)
+#### Calculate the hulls for each group
+hull <- ordi_data %>%
+  group_by(Loc_sec) %>%
+  slice(chull(Axis.1, Axis.2))
+
+ordi_clr <- ggplot(ordi_data, aes(x=Axis.1, y = Axis.2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+    geom_polygon(data = hull, alpha = 0.1, aes(color=Loc_sec, fill=Loc_sec)) +
+    geom_point(size=5, color="black", shape=21, aes(fill=Loc_sec)) +
+    xlab(paste("PC1: 13.6%")) +
+    ylab(paste("PC2: 9.6%")) +
+    scale_fill_manual(name = "Location", values = loc_sec_color) +
+    scale_color_manual(name = "", values = loc_sec_color) +
+    plot_theme + plot_guide
+ordi_clr
+
+save_file <- paste("PCoA_clr_draft.svg", sep="")
+ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
+
+### Plot ordination (Figure S8E)
+# Calculate the hulls for each group
+hull <- ordi_data %>%
+  group_by(Sequence_batch) %>%
+  slice(chull(Axis.1, Axis.2))
+
+# plot whole
+ordi_clr_Seq <- ggplot(ordi_data, aes(x=Axis.1, y = Axis.2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+    geom_polygon(data = hull, alpha = 0.1, aes(color=Sequence_batch, fill=Sequence_batch)) +
+    geom_point(size=5, color="black", shape=21, aes(fill=Sequence_batch)) +
+    xlab(paste("PC1: 13.6%")) +
+    ylab(paste("PC2: 9.6%")) +
+    scale_fill_manual(name = "Sequence batch", values = c("black", "red")) +
+    scale_color_manual(name = "", values = c("black", "red")) +
+    plot_theme + plot_guide
+ordi_clr_Seq
+
+save_file <- paste("PCoA_clr_draft_sequenceBatch.svg", sep="")
+ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
+
+##==================== PhILR transformation (repeat this for subset of samples obj_ps_sub)
+### Add clr to phyloseq object
+ps_ilr <- phyloseq(
+    otu_table(t(f.n0), taxa_are_rows = TRUE),
+    sample_data(sample_data(obj_ps)),
+    phy_tree(filt_tree),
+    tax_table(tax_table(obj_ps))
+)
+
+### Prepare the data for PhILR
+is.rooted(phy_tree(ps_ilr))
+is.binary.tree(phy_tree(ps_ilr))
+phy_tree(ps_ilr) <- makeNodeLabel(phy_tree(ps_ilr), method="number", prefix='n')
+name.balance(phy_tree(ps_ilr), tax_table(ps_ilr), 'n10')
+otu.table <- as.data.frame(otu_table(ps_ilr))
+otu.table <- as.matrix(t(otu.table))
+tree <- phy_tree(ps_ilr)
+metadata <- sample_data(ps_ilr)
+tax <- tax_table(ps_ilr)
+
+### PhILR
+gp.philr <- philr(otu.table, tree, part.weights='enorm.x.gm.counts', ilr.weights='blw.sqrt', return.all=FALSE)
+
+### Ordinate and add metadata
+ordi.scores <- as.data.frame(gp.pcoa$vectors)
+ordi.scores$Sample_abbrev <- rownames(ordi.scores)
+ordi_data <- merge(alpha.div.metadata2, ordi.scores, by = c('Sample_abbrev'))
+ordi_data$Loc_sec <- gsub("_", " ", ordi_data$Loc_sec)
+ordi_data$Loc_sec <- factor(ordi_data$Loc_sec, ordered = TRUE, levels = c("Amargosa Valley", "Ash Meadows", "Death Valley", "Frenchman and Yucca Flat", "Pahute Mesa", "Rainier Mesa", "Spring Mountains", "Oasis Valley"))
+
+### Plot ordination (Figure S8G; subset of samples Figure S8I)
+#### Calculate the hulls for each group
+hull <- ordi_data %>%
+  group_by(Loc_sec) %>%
+  slice(chull(Axis.1, Axis.2))
+
+ordi_philr <- ggplot(ordi_data, aes(x=Axis.1, y = Axis.2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+    geom_polygon(data = hull, alpha = 0.1, aes(color=Loc_sec, fill=Loc_sec)) +
+    geom_point(size=5, color="black", shape=21, aes(fill=Loc_sec)) +
+    xlab(paste("PC1: 15.3%")) +
+    ylab(paste("PC2: 11.4%")) +
+    scale_fill_manual(name = "Location", values = loc_sec_color) +
+    scale_color_manual(name = "", values = loc_sec_color) +
+    plot_theme + plot_guide
+ordi_philr
+
+save_file <- paste("PCoA_philr_draft.svg", sep="")
+ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
+
+### Plot ordination (Figure S8H)
+#### Calculate the hulls for each group
+hull <- ordi_data %>%
+  group_by(Sequence_batch) %>%
+  slice(chull(Axis.1, Axis.2))
+
+ordi_philr_Seq <- ggplot(ordi_data, aes(x=Axis.1, y = Axis.2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+    geom_polygon(data = hull, alpha = 0.1, aes(color=Sequence_batch, fill=Sequence_batch)) +
+    geom_point(size=3, color="black", shape=21, aes(fill=Sequence_batch)) +
+    xlab(paste("PC1: 15.3%")) +
+    ylab(paste("PC2: 11.4%")) +
+    scale_fill_manual(name = "Sequence batch", values = c("black", "red")) +
+    scale_color_manual(name = "", values = c("black", "red")) +
+    plot_theme + plot_guide
+ordi_philr_Seq
+
+save_file <- paste("PCoA_philr_draft_sequenceBatch.svg", sep="")
+ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
+
+## Combine for Figure S8
+both <- plot_grid(rpca_hull + theme(legend.position="none"),
+                 rpca_hull_Seq + theme(legend.position="none"),
+                 rpca_hull_sub + theme(legend.position="none"),
+                 ordi_clr + theme(legend.position="none"),
+                 ordi_clr_Seq + theme(legend.position="none"),
+                 ordi_clr_sub + theme(legend.position="none"),
+                 ordi_philr + theme(legend.position="none"),
+                 ordi_philr_Seq + theme(legend.position="none"),
+                 ordi_philr_sub + theme(legend.position="none"),
+                 ncol=3, align = "v", axis="b")
+
+save_file <- paste("Combo_for_supplementary_compositionalTransform.pdf", sep="")
+ggsave(save_file, path = beta, plot = both, scale = 1, width = 12, height = 12, units = c("in"), dpi = 300)

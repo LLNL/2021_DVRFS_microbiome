@@ -521,11 +521,170 @@ ggsave(save_file_plot, path = determ, scale = 1, width = 20, height = 15, units 
 combo <- cbind(rcbc2.melt.box, bNTI.melt.box)
 write.csv(combo, paste(determ,"/combo_melted.csv", sep=""), quote = F)
 
+## Plot combined heatmap
+### Create symmetric matrix from long form datatables
+#### Get important columns
+bNTI_heatmap_data <- bNTI.melt.box[,c("Sample_abbrev", "variable", "value")]
+rcbc_heatmap_data <- rcbc2.melt.box[,c("Sample_abbrev", "variable", "value")]
+
+#### Make undirected so that graph matrix will be symmetric
+bNTI_heatmap_data <- graph.data.frame(bNTI_heatmap_data, directed=FALSE)
+rcbc_heatmap_data <- graph.data.frame(rcbc_heatmap_data, directed=FALSE)
+
+#### add value as a weight attribute
+bNTI_heatmap_data <- get.adjacency(bNTI_heatmap_data, attr="value", sparse=FALSE)
+rcbc_heatmap_data <- get.adjacency(rcbc_heatmap_data, attr="value", sparse=FALSE)
+
+head(bNTI_heatmap_data)
+head(rcbc_heatmap_data)
+
+### Get RCBC values with abs bNTI < 2
+combo <- cbind(rcbc2.melt.box, bNTI.melt.box)
+colnames(combo) <- c("Sample_abbrev", "Loc_DV3", "Loc_sec", "var_RCBC", "RCBC", "Sample_abbrev_bNTI", "Loc_DV3_bNTI", "Loc_sec_bNTI", "var_bNTI", "bNTI")
+combo$RCBC_lim <- combo$RCBC
+combo_rcbc_lim <- within(combo, RCBC_lim[abs(bNTI) > 2] <- '2')
+head(combo_rcbc_lim)
+write.csv(combo_rcbc_lim, paste(determ,"/combo_melted_rcbc_lim.csv", sep=""), quote = F)
+
+#### create the matrix
+rcbc_heatmap_data_lim <- combo_rcbc_lim[, c("Sample_abbrev", "var_RCBC", "RCBC_lim")]
+
+#### Make undirected so that graph matrix will be symmetric
+rcbc_heatmap_data_lim <- graph.data.frame(rcbc_heatmap_data_lim, directed=FALSE)
+
+#### add value as a weight attribute
+rcbc_heatmap_data_lim <- get.adjacency(rcbc_heatmap_data_lim, attr="RCBC_lim", sparse=FALSE)
+
+head(rcbc_heatmap_data_lim)
+
+## Sort rows and columns
+bNTI_heatmap_data <- bNTI_heatmap_data[, c('AM1' , 'AM2' , 'AM3' , 'AM4' , 'AM5' , 'AM6' , 'AM7', 'SM1' , 'SM2' , 'SM3' , 'SM4', 'YF1' , 'YF2' , 'YF3', 'FF1' , 'FF2', 'RM1' , 'RM2', 'AV1' , 'AV2' , 'AV3', 'DV1' , 'DV2' , 'DV3', 'OV1', 'OV2', 'PM10', 'PM5' , 'PM16' , 'PM15' , 'PM7' , 'PM4' , 'PM8' , 'PM1' , 'PM2' , 'PM3' , 'PM6' , 'PM9' ,  'PM11' , 'PM12' , 'PM13' , 'PM14')]
+
+bNTI_heatmap_data <- bNTI_heatmap_data[c('AM1' , 'AM2' , 'AM3' , 'AM4' , 'AM5' , 'AM6' , 'AM7', 'SM1' , 'SM2' , 'SM3' , 'SM4', 'YF1' , 'YF2' , 'YF3', 'FF1' , 'FF2', 'RM1' , 'RM2', 'AV1' , 'AV2' , 'AV3', 'DV1' , 'DV2' , 'DV3', 'OV1', 'OV2', 'PM10', 'PM5' , 'PM16' , 'PM15' , 'PM7' , 'PM4' , 'PM8' , 'PM1' , 'PM2' , 'PM3' , 'PM6' , 'PM9' ,  'PM11' , 'PM12' , 'PM13' , 'PM14'), ]
+
+colnames(bNTI_heatmap_data)
+rownames(bNTI_heatmap_data)
+
+rcbc_heatmap_data_lim <- rcbc_heatmap_data_lim[, c('AM1' , 'AM2' , 'AM3' , 'AM4' , 'AM5' , 'AM6' , 'AM7', 'SM1' , 'SM2' , 'SM3' , 'SM4', 'YF1' , 'YF2' , 'YF3', 'FF1' , 'FF2', 'RM1' , 'RM2', 'AV1' , 'AV2' , 'AV3', 'DV1' , 'DV2' , 'DV3', 'OV1', 'OV2', 'PM10', 'PM5' , 'PM16' , 'PM15' , 'PM7' , 'PM4' , 'PM8' , 'PM1' , 'PM2' , 'PM3' , 'PM6' , 'PM9' ,  'PM11' , 'PM12' , 'PM13' , 'PM14')]
+
+rcbc_heatmap_data_lim <- rcbc_heatmap_data_lim[c('AM1' , 'AM2' , 'AM3' , 'AM4' , 'AM5' , 'AM6' , 'AM7', 'SM1' , 'SM2' , 'SM3' , 'SM4', 'YF1' , 'YF2' , 'YF3', 'FF1' , 'FF2', 'RM1' , 'RM2', 'AV1' , 'AV2' , 'AV3', 'DV1' , 'DV2' , 'DV3', 'OV1', 'OV2', 'PM10', 'PM5' , 'PM16' , 'PM15' , 'PM7' , 'PM4' , 'PM8' , 'PM1' , 'PM2' , 'PM3' , 'PM6' , 'PM9' ,  'PM11' , 'PM12' , 'PM13' , 'PM14'), ]
+
+colnames(rcbc_heatmap_data_lim)
+rownames(rcbc_heatmap_data_lim)
+
+## only lower or upper triangle
+### bNTI upper triangle
+bNTI_heatmap_data_upper <- bNTI_heatmap_data %>% replace_lower_triangle(by = NA)
+rownames(bNTI_heatmap_data_upper) <- bNTI_heatmap_data_upper$rowname
+bNTI_heatmap_data_upper <- as.matrix(bNTI_heatmap_data_upper[,-1])
+head(bNTI_heatmap_data_upper)
+
+### RCBC lower triangle
+rcbc_heatmap_data_lower <- rcbc_heatmap_data_lim %>% replace_upper_triangle(by = NA)
+rownames(rcbc_heatmap_data_lower) <- rcbc_heatmap_data_lower$rowname
+rcbc_heatmap_data_lower <- as.matrix(rcbc_heatmap_data_lower[,-1])
+rcbc_heatmap_data_lower <- suppressWarnings(apply(rcbc_heatmap_data_lower, 2 ,as.numeric))
+rownames(rcbc_heatmap_data_lower) <- colnames(rcbc_heatmap_data_lower)
+head(rcbc_heatmap_data_lower)
+
+## Plot bNTI heatmap
+### Annotate columns
+annotation_col = data.frame(
+    Location = DATA_PHYLOSEQ_FIXED$Loc_sec,
+    Basin = DATA_PHYLOSEQ_FIXED$Loc_DV3)
+rownames(annotation_col) = rownames(DATA_PHYLOSEQ_FIXED)
+
+ann_colors = list(
+    Location = c(Ash_Meadows = '#e50006', Amargosa_Valley = '#043478', Death_Valley = '#38ab31', Frenchman_and_Yucca_Flat = '#0f87a5', Oasis_Valley = '#9ea8a7', Pahute_Mesa = '#7f468d', Rainier_Mesa = '#fb9e7f', Spring_Mountains = '#9a0020'),
+    Basin = c(AFFCR = "#478432", AM = "#a5006b", PMOV = "#5c2d19"))
+
+### Color legend gradient (bNTI)
+bk1 <- c(seq(-4.52,-1.9,by=0.1),-1.999)
+bk2 <- c(-2.001,seq(-2.1,1.9,by=0.1),1.999)
+bk3 <- c(2.000, seq(2.001,8.76,by=0.1))
+bk <- c(bk1,bk2,bk3)  #combine the break limits for purpose of graphing
+
+my_palette <- c(colorRampPalette(colors = c("#184e77", "#48cae4"))(n = length(bk1)-1),
+              "#283618", "#283618",
+              c(colorRampPalette(colors = c("#ffc9b9", "#fefee3", "#f4e285"))(n = length(bk2)-1)),
+               "#f4e285", "#aad576",
+               c(colorRampPalette(colors = c("#aad576", "#386641"))(n = length(bk3)-1)))
+
+### bNTI heatmap
+heatmap_bNTI <- pheatmap(bNTI_heatmap_data_upper,
+         color = my_palette, breaks = bk,
+         na_col = c("white"),
+         border_color = "black",
+         show_colnames = TRUE,
+         show_rownames = TRUE,
+         annotation_col = annotation_col,
+         annotation_colors = ann_colors,
+         drop_levels = TRUE,
+         fontsize = 14,
+         cluster_cols = FALSE, # mat_cluster_cols
+         cluster_rows = FALSE, #mat_cluster_rows
+         main = "bNTI",
+         gaps_col = cumsum(c(11,13,18)),
+         gaps_row = cumsum(c(11,13,18)), legend=T)
+
+heatmap_bNTI
+
+save_file_plot <- paste("heatmap_bNTI.svg", sep="")
+ggsave(save_file_plot, heatmap_bNTI, path = determ, scale = 1, width = 15, height = 10, units = c("in"), dpi = 300)
+
+## Plot RCBC heatmap
+### Annotate columns
+annotation_col = data.frame(
+    Location = DATA_PHYLOSEQ_FIXED$Loc_sec,
+    Basin = DATA_PHYLOSEQ_FIXED$Loc_DV3)
+rownames(annotation_col) = rownames(DATA_PHYLOSEQ_FIXED)
+
+ann_colors = list(
+    Location = c(Ash_Meadows = '#e50006', Amargosa_Valley = '#043478', Death_Valley = '#38ab31', Frenchman_and_Yucca_Flat = '#0f87a5', Oasis_Valley = '#9ea8a7', Pahute_Mesa = '#7f468d', Rainier_Mesa = '#fb9e7f', Spring_Mountains = '#9a0020'),
+    Basin = c(AFFCR = "#478432", AM = "#a5006b", PMOV = "#5c2d19"))
+
+### Color legend gradient (RCBC)
+bk1 <- c(seq(-1, -0.94,by=0.1),-0.9499)
+bk2 <- c(-0.95,seq(-0.9501,0.94,by=0.3),0.9499)
+bk3 <- c(0.95, seq(0.9501,1,by=0.1),1.001)
+bk4 <- c(1.002, seq(1.003,2,by=0.1))
+bk <- c(bk1,bk2,bk3,bk4)  #combine the break limits for purpose of graphing
+
+my_palette <- c(colorRampPalette(colors = c("#a4133c", "#ff8fa3"))(n = length(bk1)-1),
+              "#ff8fa3", "#ffc9b9",
+              c(colorRampPalette(colors = c("#ffc9b9", "#fefee3", "#f4e285"))(n = length(bk2)-1)),
+               "#f4e285", "#c77dff",
+               c(colorRampPalette(colors = c("#c77dff", "#3c096c"))(n = length(bk3)-1)),
+               "#d3d3d3","#d3d3d3",
+               c(colorRampPalette(colors = c("#d3d3d3", "#d3d3d3"))(n = length(bk4)-1)))
+
+### RCBC heatmap
+heatmap_RCBC <- pheatmap(rcbc_heatmap_data_lower,
+         color = my_palette, breaks = bk,
+         na_col = c("white"),
+         border_color = "black",
+         show_colnames = TRUE,
+         show_rownames = TRUE,
+         annotation_col = annotation_col,
+         annotation_colors = ann_colors,
+         drop_levels = TRUE,
+         fontsize = 14,
+         cluster_cols = FALSE, # mat_cluster_cols
+         cluster_rows = FALSE, #mat_cluster_rows
+         main = "RCBC",
+         gaps_col = cumsum(c(11,13,18)),
+         gaps_row = cumsum(c(11,13,18)), legend=T)
+
+heatmap_RCBC
+
+save_file_plot <- paste("heatmap_RCBC.svg", sep="")
+ggsave(save_file_plot, heatmap_RCBC, path = determ, scale = 1, width = 15, height = 10, units = c("in"), dpi = 300)
+
+# Final plot (Figure 5), manually combine the upper and lower triangles and make the legends nice
+
+
 ## Plot ratios
 ### Import data
-within <- read_excel("combo_melted.xlsx", sheet="connected")
-head(within)
-
 between <- read_excel("combo_melted.xlsx", sheet="between")
 head(between)
 
@@ -540,7 +699,7 @@ all1$Loc_sec <- gsub('and','&', all1$Loc_sec)
 all1$Loc_sec <- factor(all1$Loc_sec, ordered = TRUE, levels = c("Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Amargosa Valley", "Ash Meadows", "Spring Mountains", "Death Valley"))
 all1$Combo_interp <- factor(all1$Combo_interp, ordered = TRUE, levels = c("Variable Selection", "Homogeneous Selection", "Homogenizing Dispersal", "Dispersal Limitation + Drift", "Undominated"))
 
-### Plot box plot for between communities processes (Figure 5B)
+### Plot box plot for between communities processes (Figure 5 inset)
 plot_theme <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
     panel.border = element_rect(colour="black", size=1, fill=NA),
     strip.background=element_rect(fill='white', colour='white', size = 0),
@@ -567,95 +726,3 @@ all_between <- ggplot(data=all1, aes(x=Loc_sec, y=freq, fill=Combo_interp)) +
     plot_nomargins_y + plot_nomargins_x + plot_theme + plot_guides
 save_file_plot <- paste("ratio_assembly_processes.pdf", sep="") 
 ggsave(save_file_plot, path=determ, scale = 1, width = 10, height = 8, units = c("in"), dpi = 300)
-
-### Organize data for within community processes
-target <- c("AM1", "AM2", "AM3", "AM4", "AM5", "AM6", "AM7")
-wAM <- stacked_data[stacked_data$Loc %in% target, ] 
-wAM <- wAM[wAM$Sample_abbrev %in% target, ] 
-
-target <- c("AV1", "AV2", "AV3")
-wAV <- stacked_data[stacked_data$Loc %in% target, ] 
-wAV <- wAV[wAV$Sample_abbrev %in% target, ] 
-
-target <- c("DV1", "DV2", "DV3")
-wDV <- stacked_data[stacked_data$Loc %in% target, ] 
-wDV <- wDV[wDV$Sample_abbrev %in% target, ] 
-
-target <- c("FF1", "FF2", "YF1", "YF2", "YF3")
-wFFYF <- stacked_data[stacked_data$Loc %in% target, ] 
-wFFYF <- wFFYF[wFFYF$Sample_abbrev %in% target, ] 
-
-target <- c("PM1", "PM2", "PM3", "PM5", "PM6", "PM9", "PM10", "PM11", "PM12", "PM13", "PM14", "PM15", "PM16", "PM4", "PM7", "PM8")
-wPM <- stacked_data[stacked_data$Loc %in% target, ] 
-wPM <- wPM[wPM$Sample_abbrev %in% target, ] 
-
-target <- c("OV1", "OV2")
-wOV <- stacked_data[stacked_data$Loc %in% target, ] 
-wOV <- wOV[wOV$Sample_abbrev %in% target, ] 
-
-target <- c("RM1", "RM2")
-wRM <- stacked_data[stacked_data$Loc %in% target, ] 
-wRM <- wRM[wRM$Sample_abbrev %in% target, ] 
-
-target <- c("SM1", "SM2", "SM3", "SM4")
-wSM <- stacked_data[stacked_data$Loc %in% target, ] 
-wSM <- wSM[wSM$Sample_abbrev %in% target, ] 
-
-within <- bind_rows(wAM, wAV, wDV, wFFYF, wPM, wOV, wRM, wSM)
-within_melt <- group_by(within, Loc_DV3, Loc_sec, Combo_interp) %>%
-                arrange(Combo_interp) %>% 
-                summarise(observ = n()) %>% 
-                mutate(freq = observ / sum(observ))
-
-### fix cluster column
-within_melt$Loc_sec <- gsub('_',' ', within_melt$Loc_sec)
-within_melt$Loc_sec <- gsub('and','&', within_melt$Loc_sec)
-within_melt$Loc_sec <- factor(within_melt$Loc_sec, ordered = TRUE, levels = c("Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Amargosa Valley", "Ash Meadows", "Spring Mountains", "Death Valley"))
-within_melt$Combo_interp <- factor(within_melt$Combo_interp, ordered = TRUE, levels = c("Variable Selection", "Homogeneous Selection", "Homogenizing Dispersal", "Dispersal Limitation + Drift", "Undominated"))
-
-### Plot box plot for within community processes(Figure 5A)
-within_plot <- ggplot(data=within_melt, aes(x=Loc_sec, y=freq, fill=Combo_interp)) +
-    scale_fill_manual(values=c("Variable Selection"="#80b92c", "Homogeneous Selection"="#2f6f43", "Homogenizing Dispersal"="#f26a8d", "Dispersal Limitation + Drift"="#dd2d4a", "Undominated"="#d6d2d2")) + 
-    labs(y = "Ratio", fill = "Community Process", x = "Site") +
-    geom_bar(aes(), stat="identity", position="fill", color="black", width=0.9) +
-    plot_nomargins_y + plot_nomargins_x + plot_theme + plot_guides
-save_file_plot <- paste("ratio_within_community_assembly_processes.pdf", sep="") 
-ggsave(save_file_plot, path=determ, scale = 1, width = 10, height = 8, units = c("in"), dpi = 300)
-
-### Organize data to focus on Death Valley
-target <- c("DV1", "DV2", "DV3")
-bDVonly <- stacked_data[stacked_data$Loc %in% target, ] 
-write.csv(bDVonly, "between_death_valley_assembly_processes.csv")
-
-bDVonly_melt <- group_by(bDVonly, Loc_sec, Combo_interp) %>%
-                arrange(Combo_interp) %>% 
-                summarise(observ = n()) %>% 
-                mutate(freq = observ / sum(observ))
-
-### fix cluster column
-bDVonly_melt$Loc_sec <- gsub('_',' ', bDVonly_melt$Loc_sec)
-bDVonly_melt$Loc_sec <- gsub('and','&', bDVonly_melt$Loc_sec)
-bDVonly_melt$Loc_sec <- factor(bDVonly_melt$Loc_sec, ordered = TRUE, levels = c("Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Amargosa Valley", "Ash Meadows", "Spring Mountains", "Death Valley"))
-bDVonly_melt$Combo_interp <- factor(bDVonly_melt$Combo_interp, ordered = TRUE, levels = c("Variable Selection", "Homogeneous Selection", "Homogenizing Dispersal", "Dispersal Limitation + Drift", "Undominated"))
-write.csv(bDVonly_melt, "between_death_valley_assembly_processes_melt.csv")
-
-### remove death valley loc_sec (this is same as within-community plot)
-bDVonly_melt <- bDVonly_melt[ which(bDVonly_melt$Loc_sec!='Death Valley'), ]
-
-### plot box plot for Death Valley processes (Figure 5C)
-bDVonly_melt_plot <- ggplot(data=bDVonly_melt, aes(x=Loc_sec, y=freq, fill=Combo_interp)) +
-    scale_fill_manual(values=c("Variable Selection"="#80b92c", "Homogeneous Selection"="#2f6f43", "Homogenizing Dispersal"="#f26a8d", "Dispersal Limitation + Drift"="#dd2d4a", "Undominated"="#d6d2d2")) + 
-    labs(y = "Ratio", fill = "Community Process", x = "Site") +
-    geom_bar(aes(), stat="identity", position="fill", color="black", width=0.9) +
-    #facet_grid(.~Grouping, scales="free")+
-    plot_nomargins_y + plot_nomargins_x + plot_theme + plot_guides
-save_file_plot <- paste("ratio_between_community_assembly_processes_DVonly.pdf", sep="") #change the file name if need to
-ggsave(save_file_plot, path=determ, scale = 1, width = 10, height = 8, units = c("in"), dpi = 300)
-
-## Combine all plots (Figure 5)
-plot_grid(within_plot + theme(legend.position="none"), 
-          all_between + theme(legend.position="none", axis.title.y = element_blank()),
-          bDVonly_melt_plot + theme(legend.position="none", axis.title.y = element_blank()), 
-          align="hv", axis="b", nrow=1, rel_widths = c(1, 1, 0.9))
-save_file_plot <- paste("combo_ecological_processes.pdf", sep="")
-ggsave(save_file_plot, path = determ, scale = 1, width = 12, height = 5, units = c("in"), dpi = 300)

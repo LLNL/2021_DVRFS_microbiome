@@ -157,14 +157,13 @@ plot_metadata$pH <- as.numeric(as.character(plot_metadata$pH))
 compare_means(Shannon ~ Loc_sec, data = plot_metadata, group.by = "Sequence_batch", method="wilcox.test", p.adjust.method = "fdr", exact=TRUE)
 
 ## Keep variables for plotting
-keep_data <- names(plot_metadata) %in% c("Sample_abbrev", "Loc_sec", "Piper_group3", "PD", "Shannon", "Simpson", "rock_type", "Well_spring", "tritium_BqL_fct", "Sequence_batch", "Sampling_method")
+keep_data <- names(plot_metadata) %in% c("Sample_abbrev", "Loc_sec", "Piper_group_ref", "PD", "Shannon", "Simpson", "rock_type", "Well_spring", "tritium_BqL_fct", "Sequence_batch", "Sampling_method")
 combo_plot <- plot_metadata[keep_data]
-colnames(combo_plot) <- c("Sample_abbrev", "Sampling Method", "Loc_sec", "Location Type", "Rock Type", "Piper Group", "Sequence Batch", "Shannon", "Simpson", "PD", "Tritium")
+colnames(combo_plot) <- c("Sample_abbrev", "Sampling Method", "Location", "Location Type", "Rock Type", "Overall Chemistry", "Sequence Batch", "Shannon", "Simpson", "PD", "Tritium")
 
 ## Melt the dataframe
 combo_plot <- reshape2::melt(combo_plot, id=c("Sample_abbrev", "PD", "Shannon", "Simpson"))
-combo_plot$value <- factor(combo_plot$value, ordered=TRUE, levels=c("Carbonate", "Volcanic", "Group 1", "Group 2", "Group 3", "Groundwater", "Spring", "Tunnel", "Low", "High", "Batch 1", "Batch 2", "Spring_pump", "Pump", "Bailer_Jackpump", "Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Ash Meadows", "Spring Mountains", "Amargosa Valley", "Death Valley"))
-combo_plot$variable <- gsub('Loc_sec', 'Location', combo_plot$variable)
+combo_plot$value <- factor(combo_plot$value, ordered=TRUE, levels=c("Carbonate", "Volcanic", "Ca-Mg-HCO3", "Na-HCO3", "NaCl", "Groundwater", "Spring", "Tunnel", "Low", "High", "Batch 1", "Batch 2", "Spring_pump", "Pump", "Bailer_Jackpump", "Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Ash Meadows", "Spring Mountains", "Amargosa Valley", "Death Valley"))
 
 ## Set up theme
 plot_theme <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
@@ -267,14 +266,13 @@ plot_metadata$mntd.obs.p.taxa <- comm.sesmntd.taxa$mntd.obs.p[match(rownames(com
 compare_means(mntd.obs.z.taxa ~ tritium_BqL_fct, data = plot_metadata, group.by = "Sequence_batch", method="wilcox.test", p.adjust.method = "fdr", exact=TRUE)
 
 ### Keep variables for plotting
-keep_data <- names(plot_metadata) %in% c("Sample_abbrev", "Loc_sec", "Piper_group3", "pd.obs.z", "mpd.obs.z.taxa", "mntd.obs.z.taxa", "pd.obs.p", "mpd.obs.p.taxa", "mntd.obs.p.taxa", "rock_type", "Well_spring", "tritium_BqL_fct", "Sequence_batch", "Sampling_method")
+keep_data <- names(plot_metadata) %in% c("Sample_abbrev", "Loc_sec", "Piper_group_ref", "pd.obs.z", "mpd.obs.z.taxa", "mntd.obs.z.taxa", "pd.obs.p", "mpd.obs.p.taxa", "mntd.obs.p.taxa", "rock_type", "Well_spring", "tritium_BqL_fct", "Sequence_batch", "Sampling_method")
 combo_plot <- plot_metadata[keep_data]
-colnames(combo_plot) <- c("Sample_abbrev", "Sampling Method", "Loc_sec", "Location Type", "Rock Type", "Piper Group", "Sequence Batch", "Tritium", "SES.PD", "SES.MPD", "SES.MNTD", "SES.PD.P", "SES.MPD.P", "SES.MNTD.P")
+colnames(combo_plot) <- c("Sample_abbrev", "Sampling Method", "Location", "Location Type", "Rock Type", "Overall Chemistry", "Sequence Batch", "Tritium", "SES.PD", "SES.MPD", "SES.MNTD", "SES.PD.P", "SES.MPD.P", "SES.MNTD.P")
 
 ### Melt the dataframe
 combo_plot <- reshape2::melt(combo_plot, id=c("Sample_abbrev","SES.PD", "SES.MPD", "SES.MNTD", "SES.PD.P", "SES.MPD.P", "SES.MNTD.P"))
-combo_plot$value <- factor(combo_plot$value, ordered=TRUE, levels=c("Carbonate", "Volcanic", "Group 1", "Group 2", "Group 3", "Groundwater", "Spring", "Tunnel", "Low", "High", "Batch 1", "Batch 2", "Spring_pump", "Pump", "Bailer_Jackpump", "Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Ash Meadows", "Spring Mountains", "Amargosa Valley", "Death Valley"))
-combo_plot$variable <- gsub('Loc_sec', 'Location', combo_plot$variable)
+combo_plot$value <- factor(combo_plot$value, ordered=TRUE, levels=c("Carbonate", "Volcanic", "Ca-Mg-HCO3", "Na-HCO3", "NaCl", "Groundwater", "Spring", "Tunnel", "Low", "High", "Batch 1", "Batch 2", "Spring_pump", "Pump", "Bailer_Jackpump", "Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Ash Meadows", "Spring Mountains", "Amargosa Valley", "Death Valley"))
 
 ### Plot boxplots (Figure S5)
 plot_nomargins_SESPD <- scale_y_continuous(expand = expansion(mult = c(0, 0)), limits=c(-15,5), breaks=c(-15,-10,-5,0))

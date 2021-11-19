@@ -126,11 +126,11 @@ hull <- ordi_data %>%
 
 nmds_wuni_piper <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
-    geom_polygon(data = hull, alpha = 0.1, aes(color=Piper_group3, fill=Piper_group3)) +
-    geom_point(size=3, color="black", shape=21, aes(fill=Piper_group3)) +
+    geom_polygon(data = hull, alpha = 0.1, aes(color=Piper_group_ref, fill=Piper_group_ref)) +
+    geom_point(size=3, color="black", shape=21, aes(fill=Piper_group_ref)) +
     xlab(paste("NMDS1")) +
     ylab(paste("NMDS2")) +
-    scale_fill_lancet(name = "Piper group") +
+    scale_fill_lancet(name = "Overall Chemistry") +
     scale_color_lancet(name = "") +
     plot_theme + plot_guide
 

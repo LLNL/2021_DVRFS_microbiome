@@ -256,7 +256,7 @@ colnames(metadata_phyloseq)
 
 ## PCA Plot
 ### Keep numeric variables; formatting
-drop_data <- names(metadata_phyloseq) %in% c("Loc_sec","Well_spring","rock_type","Piper_group3")
+drop_data <- names(metadata_phyloseq) %in% c("Loc_sec","Well_spring","rock_type","Piper_group_ref")
 metadata_phyloseq_drop <- metadata_phyloseq[!drop_data]
 colnames(metadata_phyloseq_drop)
 pca_metadata <- metadata_phyloseq_drop
@@ -300,7 +300,26 @@ pca_theme <- theme(panel.background = element_rect(fill = "white", colour = "bla
     legend.title = element_text(size=15, colour="black"))
 xlimit <- scale_x_continuous(breaks = c(-4,-2,0,2), limits = c(-4,3))
 ylimit <- scale_y_continuous(breaks = c(-4,-2,0,2,4,6,8), limits = c(-4,9))
-pca_guide <- guides(color = guide_colourbar(frame.linewidth = 1, frame.colour = "black", ticks = TRUE, ticks.colour = "black", ticks.linewidth = 1))
+pca_guide <- guides(fill = guide_legend(override.aes = list(size = 3, color=c("#ae2012", "#005f73"))))
+
+#### Get the data together
+pca_sample_loadings <- res.pca$scores
+pca_sample_loadings <- as.data.frame(pca_sample_loadings)
+rownames(metadata_phyloseq) <- metadata_phyloseq$Sample_ID
+metadata_phyloseq <- as.data.frame(metadata_phyloseq)
+metadata_phyloseq$PC1 <- pca_sample_loadings$Comp.1[match(rownames(metadata_phyloseq), rownames(pca_sample_loadings))]
+metadata_phyloseq$PC2 <- pca_sample_loadings$Comp.2[match(rownames(metadata_phyloseq), rownames(pca_sample_loadings))]
+
+#### Figure 2A
+ggplot(metadata_phyloseq, aes(x=PC1, y = PC2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+    geom_point(size=3, color="black", aes(fill=rock_type, shape=Piper_group_ref)) +
+    scale_shape_manual(name = "Overall Chemistry", values = c(21, 22, 23)) +
+    scale_fill_manual(name = "Rock type", values = c("#ae2012", "#005f73")) +
+    xlab("PC1: 22.1%") + ylab("PC2: 19.2%") +
+    pca_theme + xlimit + ylimit + pca_guide +
+    geom_text_repel(aes(label = Sample_ID), box.padding = 0.3, point.padding = 0.3, segment.color = 'grey50', max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
+ggsave("PCA_piper_group_updated.pdf", scale = 1, width = 7, height = 4, units = c("in"), dpi = 300)
 
 #### Biplot (Figure 2B)
 fviz_pca_biplot(res.pca,
@@ -379,19 +398,6 @@ fviz_pca_ind(res.pca,
         repel = TRUE
         ) + xlimit + ylimit + pca_theme + xlab("PC1 (22.1%)") + ylab("PC2 (19.2%)")
 ggsave("PCA_well_spring.svg", path = path_geochem, scale = 1, width = 7, height = 5, units = c("in"), dpi = 300)
-
-### individual only (Figure 2A)
-fviz_pca_ind(res.pca,
-    # Individuals
-        geom.ind = c("point","text"), 
-        col.ind = metadata_phyloseq$Piper_group3, fill.ind = metadata_phyloseq$rock_type,
-        palette = "lancet", pointsize = 3, 
-        mean.point = FALSE,
-    # Other
-        legend.title = list(fill = "Rock Type", color = "Piper Group"),
-        repel = TRUE
-) + xlimit + ylimit + pca_theme + xlab("PC1 (22.1%)") + ylab("PC2 (19.2%)") + scale_shape_manual(values=c(23,21,22))
-ggsave("PCA_rock_type_cluster.svg", path = path_geochem, scale = 1, width = 7, height = 5, units = c("in"), dpi = 300) # manually changed the color to black and shape to Piper Group
 
 ## Data Export (Table S2, Table S5)
 des_geochem_num3 <- as.data.frame(describe(geochem_num3))

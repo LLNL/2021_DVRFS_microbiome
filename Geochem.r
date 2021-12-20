@@ -51,7 +51,6 @@ plot_guides <- guides(colour=FALSE, fill = guide_legend(ncol=1))
 plot_nomargins_y <- scale_y_continuous(expand = expansion(mult = c(0, 0)))
 plot_nomargins_x <- scale_x_discrete(expand = expansion(mult = c(0, 0)))
 
-
 plot_theme_boxplot <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
     panel.border = element_rect(colour="black", size=1, fill=NA),
     strip.background=element_rect(fill='white', colour='white'),
@@ -247,11 +246,8 @@ metadata_phyloseq$tritium_BqL <- as.numeric(metadata_phyloseq$tritium_BqL)
 metadata_phyloseq$Loc_sec <- geochem$Loc_sec[match(rownames(metadata_phyloseq), geochem$Sample_abbrev)]
 metadata_phyloseq$Well_spring <- geochem$Well_spring[match(rownames(metadata_phyloseq), geochem$Sample_abbrev)]
 metadata_phyloseq$rock_type <- geochem$rock_type[match(rownames(metadata_phyloseq), geochem$Sample_abbrev)]
-metadata_phyloseq$Piper_group3 <- geochem$Piper_group3[match(rownames(metadata_phyloseq), geochem$Sample_abbrev)]
-metadata_phyloseq$Piper_group3 <- gsub('Group1', 'Group 1', metadata_phyloseq$Piper_group3)
-metadata_phyloseq$Piper_group3 <- gsub('Group2', 'Group 2', metadata_phyloseq$Piper_group3)
-metadata_phyloseq$Piper_group3 <- gsub('Group3', 'Group 3', metadata_phyloseq$Piper_group3)
-metadata_phyloseq$Piper_group3 <- factor(metadata_phyloseq$Piper_group3, ordered = TRUE, levels = c("Group 1", "Group 2", "Group 3"))
+metadata_phyloseq$Piper_group_ref <- geochem$Piper_group_ref[match(rownames(metadata_phyloseq), geochem$Sample_abbrev)]
+metadata_phyloseq$Piper_group_ref <- factor(metadata_phyloseq$Piper_group_ref, ordered = TRUE, levels = c("Ca-Mg-HCO3", "Na-HCO3", "NaCl"))
 colnames(metadata_phyloseq)
 
 ## PCA Plot
@@ -298,9 +294,8 @@ pca_theme <- theme(panel.background = element_rect(fill = "white", colour = "bla
     legend.position="right",
     legend.key = element_rect(fill = "white"),
     legend.title = element_text(size=15, colour="black"))
-xlimit <- scale_x_continuous(breaks = c(-4,-2,0,2), limits = c(-4,3))
+xlimit <- scale_x_continuous(breaks = c(-4,-2,0,2,4), limits = c(-4,4))
 ylimit <- scale_y_continuous(breaks = c(-4,-2,0,2,4,6,8), limits = c(-4,9))
-pca_guide <- guides(fill = guide_legend(override.aes = list(size = 3, color=c("#ae2012", "#005f73"))))
 
 #### Get the data together
 pca_sample_loadings <- res.pca$scores
@@ -310,19 +305,42 @@ metadata_phyloseq <- as.data.frame(metadata_phyloseq)
 metadata_phyloseq$PC1 <- pca_sample_loadings$Comp.1[match(rownames(metadata_phyloseq), rownames(pca_sample_loadings))]
 metadata_phyloseq$PC2 <- pca_sample_loadings$Comp.2[match(rownames(metadata_phyloseq), rownames(pca_sample_loadings))]
 
-#### Figure 2A
-ggplot(metadata_phyloseq, aes(x=PC1, y = PC2)) +
+#### Figure 2A (Location)
+metadata_phyloseq$Loc_sec <- gsub('_', ' ', metadata_phyloseq$Loc_sec)
+metadata_phyloseq$Loc_sec <- factor(metadata_phyloseq$Loc_sec, ordered = TRUE, levels = c("Amargosa Valley", "Ash Meadows", "Death Valley", "Frenchman and Yucca Flat", "Pahute Mesa", "Rainier Mesa", "Spring Mountains", "Oasis Valley"))
+loc_sec_color = c("Amargosa Valley" = "#043378", "Ash Meadows" = "#E50006", "Death Valley" = "#38AA31", "Frenchman and Yucca Flat" = "#1187A5", "Pahute Mesa" = "#7E478D", "Rainier Mesa" = "#FB9E7F", "Spring Mountains" = "#9B0020", "Oasis Valley" = "#9DA7A7")
+plot_guide <- guides(fill = guide_legend(order=1, override.aes = list(shape = 21, alpha=1, size = 5)),
+shape = "none",
+color = "none")
+
+figure_2A <- ggplot(metadata_phyloseq, aes(x=PC1, y = PC2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+    geom_point(size=3, color="black", shape=21, aes(fill=Loc_sec)) +
+    scale_fill_manual(name = "Location", values = loc_sec_color) +
+    scale_color_manual(name = "", values = loc_sec_color) +
+    xlab("PC1: 22.1%") + ylab("PC2: 19.2%") +
+    pca_theme + xlimit + ylimit + plot_guide +
+    geom_text_repel(aes(label = Sample_ID), box.padding = 0.3, point.padding = 0.3, segment.color = 'grey50', max.overlaps = getOption("ggrepel.max.overlaps", default = 20))
+figure_2A
+ggsave("PCA_location.pdf", scale = 1, width = 7, height = 4, units = c("in"), dpi = 300)
+
+#### Figure 2B (rock type, piper plot)
+plot_guide <- guides(fill = guide_legend(order=1, override.aes = list(shape = 21, alpha=1, size = 5, color="black")),
+shape = guide_legend(order=1, override.aes = list(alpha=1, size = 5, color="black")))
+
+figure_2B <- ggplot(metadata_phyloseq, aes(x=PC1, y = PC2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
     geom_point(size=3, color="black", aes(fill=rock_type, shape=Piper_group_ref)) +
-    scale_shape_manual(name = "Overall Chemistry", values = c(21, 22, 23)) +
-    scale_fill_manual(name = "Rock type", values = c("#ae2012", "#005f73")) +
+    scale_shape_manual(name = "Major-ion Chemistry", values = c(21, 22, 23)) +
+    scale_fill_manual(name = "Rock type", values = c("#ae2012", "#a8dadc")) +
     xlab("PC1: 22.1%") + ylab("PC2: 19.2%") +
-    pca_theme + xlimit + ylimit + pca_guide +
-    geom_text_repel(aes(label = Sample_ID), box.padding = 0.3, point.padding = 0.3, segment.color = 'grey50', max.overlaps = getOption("ggrepel.max.overlaps", default = 20)
-ggsave("PCA_piper_group_updated.pdf", scale = 1, width = 7, height = 4, units = c("in"), dpi = 300)
+    pca_theme + xlimit + ylimit + plot_guide +
+    geom_text_repel(aes(label = Sample_ID), box.padding = 0.3, point.padding = 0.3, segment.color = 'grey50', max.overlaps = getOption("ggrepel.max.overlaps", default = 20))
+figure_2B
+ggsave("PCA_piper_group_ref.pdf", scale = 1, width = 7, height = 4, units = c("in"), dpi = 300)
 
-#### Biplot (Figure 2B)
-fviz_pca_biplot(res.pca,
+#### Biplot (Figure 2C)
+figure_2C <- fviz_pca_biplot(res.pca,
     # Individuals
         geom.ind = c("point"),
         fill.ind = "white",
@@ -337,9 +355,20 @@ fviz_pca_biplot(res.pca,
         repel = TRUE,
         title = NULL,
         labelsize = 5
-    ) + pca_theme + xlimit + ylimit + xlab("PC1 (22.1%)") + ylab("PC2 (19.2%)") +
+    ) + pca_theme + xlimit + ylimit + xlab("PC1: 22.1%") + ylab("PC2: 19.2%") +
     scale_fill_gradient2(limits = c(0, 15), breaks=c(0,5,10,15)) + pca_guide
-ggsave("PCA_biplot.svg", path = path_geochem, scale = 1, width = 7, height = 5, units = c("in"), dpi = 300)
+figure_2C
+ggsave("PCA_biplot.pdf", scale = 1, width = 7, height = 5, units = c("in"), dpi = 300)
+
+#### Combine Figure 2A,2B,2C
+library("cowplot")
+both <- plot_grid(figure_2A + theme(legend.position="none"),
+                 figure_2B + theme(legend.position="none"),
+                 figure_2C + theme(legend.position="none"),
+                 ncol=3, align = "v", axis="b")
+
+save_file <- paste("Combo_for_Figure2.pdf", sep="")
+ggsave(save_file, plot = both, scale = 1, width = 15, height = 5, units = c("in"), dpi = 300)
 
 #### individual only - piper group - convex
 fviz_pca_ind(res.pca,

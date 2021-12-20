@@ -1,5 +1,5 @@
 # 06. Beta Diversity
-## Figure 3, Figure S6, Figure S7, Figure S8, Table 1
+## Figure 4, Figure S7, Table 1
 
 ## References
 ### Martino, C.; Morton, J. T.; Marotz, C. A.; Thompson, L. R.; Tripathi, A.; Knight, R.; Zengler, K. A Novel Sparse Compositional Technique Reveals Microbial Perturbations. mSystems 2019, 4 (1). https://doi.org/10.1128/mSystems.00016-19.

@@ -1,5 +1,5 @@
 #  04. Barplots
-## Figure S3
+## Figure S5
 
 ## Prepare phyloseq object
 filt_tree = read.tree("<path to tree.newick>")

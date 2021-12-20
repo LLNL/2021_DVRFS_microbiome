@@ -1,5 +1,5 @@
 #  08. Ecological Process
-## Figure 5, Figure S10, Table S9
+## Figure 6, Table S8
 
 ## Links to references
 ### https://github.com/danczakre/ShaleViralEcology

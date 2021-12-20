@@ -1,6 +1,6 @@
 #  02. Filtering OTUs
 ## Following decontam tutorial: https://benjjneb.github.io/decontam/vignettes/decontam_intro.html
-## Table S11, S12; Figure S11
+## Table S11; Figure S1
 
 ## Phyloseq object
 ps_use

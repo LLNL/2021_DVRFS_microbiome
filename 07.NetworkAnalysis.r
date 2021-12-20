@@ -1,5 +1,5 @@
 #  07. Network Analysis
-## Figure 4, Figure S9, Figure S12, Table S7, Table S8
+## Figure 5, Figure S8, Figure S3, Table S7, Table S8
 
 ## Links to references
 ### https://github.com/zdk123/SpiecEasi

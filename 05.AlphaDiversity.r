@@ -1,5 +1,5 @@
 #  05. Alpha Diversity
-## Figure S4, Figure S5, Table S6
+## Figure 3, Figure S2, Figure S6
 
 ## Set Path
 alpha <- file.path(paste(path_phy, "/alpha_diversity", sep=""))

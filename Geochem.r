@@ -1,5 +1,5 @@
 #  Geochemistry Analysis of DVRFS
-## Figure 2, Figure S4, Table S2, Table S3, Table S4, Table S5
+## Figure 2, Table S2, Table S3, Table S9, Table S10
 
 ## Load Packages
 packages <- c("factoextra", "corrplot", "Hmisc", "funModeling", "PerformanceAnalytics", "naniar", "finalfit", "MissMech", "mice", "rms", "dlookr", "rcompanion", "rgdal", "EnvStats", "pscl", "zCompositions", "robCompositions", "compositions", "rgr", "energy", "missMDA", "ggfortify", "readxl")

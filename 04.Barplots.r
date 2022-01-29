@@ -51,7 +51,7 @@ pal <- colors$Color
 names(pal) <- colors$Phylum
 pal
 
-## Function to plot all levels >1% at each taxonomic level by relative abundance (Figure S3)
+## Function to plot all levels >1% at each taxonomic level by relative abundance (Figure S5)
 taxrank <- c("Kingdom","Phylum","Class","Order")
 func_plotbar <- llply(as.list(taxrank), function(level, x) {
     glom <- tax_glom(x, taxrank=level)

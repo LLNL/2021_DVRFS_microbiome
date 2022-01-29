@@ -367,7 +367,7 @@ both <- plot_grid(figure_2A + theme(legend.position="none"),
                  figure_2C + theme(legend.position="none"),
                  ncol=3, align = "v", axis="b")
 
-save_file <- paste("Combo_for_Figure2.pdf", sep="")
+save_file <- paste("Combo_for_Figure2.svg", sep="")
 ggsave(save_file, plot = both, scale = 1, width = 15, height = 5, units = c("in"), dpi = 300)
 
 #### individual only - piper group - convex

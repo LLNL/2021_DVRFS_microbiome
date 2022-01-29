@@ -86,7 +86,7 @@ ggsave("prevalencethreshold.zoom.all.noncontam.otu97.pdf", path = path_phy, scal
 
 ### Check the plots. No need for prevalence filtering
 
-## Rarefaction curve (Figure S11)
+## Rarefaction curve (Figure S1)
 rarefraction.curve <- ggrare(ps.noncontam97.filt, step = 500, se = TRUE, label="Sample_abbrev")
 
 rarefraction.curve.plot <- rarefraction.curve +

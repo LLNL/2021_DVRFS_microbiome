@@ -1,5 +1,5 @@
 #  05. Alpha Diversity
-## Figure 3, Figure S2, Figure S6
+## Figure 3, Figure S6
 
 ## Set Path
 alpha <- file.path(paste(path_phy, "/alpha_diversity", sep=""))
@@ -186,7 +186,7 @@ plot_guide <- guides(fill = guide_legend(order=2, override.aes = list(shape = 21
     shape = guide_legend(order=1, override.aes = list(size = 5, color="black", alpha=1)),
     color = guide_legend(order=3, override.aes = list(size=5, shape = 21, alpha=1)))
 
-## Plot boxplots (Figure S4)
+## Plot boxplots (Figure S6)
 plot_nomargins_PD <- scale_y_continuous(expand = expansion(mult = c(0, 0)), limits=c(0,250), breaks=c(0, 100, 200))
 alpha_plot_PD <- ggplot(combo_plot, aes(x=value, y=PD)) +
     stat_boxplot(geom = "errorbar", width = 0.2) +
@@ -274,7 +274,7 @@ colnames(combo_plot) <- c("Sample_abbrev", "Sampling Method", "Location", "Locat
 combo_plot <- reshape2::melt(combo_plot, id=c("Sample_abbrev","SES.PD", "SES.MPD", "SES.MNTD", "SES.PD.P", "SES.MPD.P", "SES.MNTD.P"))
 combo_plot$value <- factor(combo_plot$value, ordered=TRUE, levels=c("Carbonate", "Volcanic", "Ca-Mg-HCO3", "Na-HCO3", "NaCl", "Groundwater", "Spring", "Tunnel", "Low", "High", "Batch 1", "Batch 2", "Spring_pump", "Pump", "Bailer_Jackpump", "Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Ash Meadows", "Spring Mountains", "Amargosa Valley", "Death Valley"))
 
-### Plot boxplots (Figure S5)
+### Plot boxplots (Figure 3)
 plot_nomargins_SESPD <- scale_y_continuous(expand = expansion(mult = c(0, 0)), limits=c(-15,5), breaks=c(-15,-10,-5,0))
 alpha_plot_SESPD <- ggplot(combo_plot, aes(x=value, y=SES.PD)) +
     stat_boxplot(geom = "errorbar", width = 0.2) +

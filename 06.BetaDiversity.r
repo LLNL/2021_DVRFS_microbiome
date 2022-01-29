@@ -91,7 +91,7 @@ hull <- ordi_data %>%
   group_by(Loc_sec) %>%
   slice(chull(MDS1, MDS2))
 
-### Plot NMDS wUniFrac (Figure 3B, Figure S6B and S6D)
+### Plot NMDS wUniFrac (Figure 4B)
 nmds_whull <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") + 
     geom_polygon(data = hull, alpha = 0.1, aes(color=Loc_sec, fill=Loc_sec)) +
@@ -104,7 +104,7 @@ nmds_whull <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
 
 nmds_whull_label <- nmds_whull + geom_label_repel(aes(label = Sample_abbrev), box.padding = 0.35, point.padding = 0.5, segment.color = 'grey50')
 
-### Plot with rock type (Figure S7A)
+### Plot with rock type
 hull <- ordi_data %>%
   group_by(rock_type) %>%
   slice(chull(MDS1, MDS2))
@@ -119,7 +119,7 @@ nmds_wuni_rock <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") +
     plot_theme + plot_guide
 
-### Plot with Piper group (Figure S7B)
+### Plot with Piper group
 hull <- ordi_data %>%
   group_by(Piper_group3) %>%
   slice(chull(MDS1, MDS2))
@@ -134,7 +134,7 @@ nmds_wuni_piper <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") +
     plot_theme + plot_guide
 
-### Plot with Sequence Batch (Figure S7C)
+### Plot with Sequence Batch
 hull <- ordi_data %>%
   group_by(Sequence_batch) %>%
   slice(chull(MDS1, MDS2))
@@ -149,7 +149,7 @@ nmds_wuni_seq <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") + 
     plot_theme + plot_guide
 
-### Plot with Sampling method (Figure S7D)
+### Plot with Sampling method
 hull <- ordi_data %>%
   group_by(Sampling_method) %>%
   slice(chull(MDS1, MDS2))
@@ -164,7 +164,7 @@ nmds_wuni_method <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") +
     plot_theme + plot_guide
 
-### Plot with Location type (Figure S7E)
+### Plot with Location type
 hull <- ordi_data %>%
   group_by(Well_spring) %>%
   slice(chull(MDS1, MDS2))
@@ -179,7 +179,7 @@ nmds_wuni_loctype <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") +
     plot_theme + plot_guide
 
-### Plot with TOC (Figure S7F)
+### Plot with TOC
 nmds_wuni_toc <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
     geom_point(shape=21, size = 5, color="black", aes(fill=TOC_mgCL)) +
@@ -189,7 +189,7 @@ nmds_wuni_toc <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") +
     plot_theme + plot_guide
 
-### Plot with temperature (Figure S7G)
+### Plot with temperature
 plot_guide <- guides(fill = guide_colourbar(frame.linewidth = 1, frame.colour = "black", ticks = TRUE, ticks.colour = "black", ticks.linewidth = 1))
 
 nmds_wuni_temp <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
@@ -201,7 +201,7 @@ nmds_wuni_temp <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     scale_color_lancet(name = "") + 
     plot_theme + plot_guide
 
-### Plot with Depth (Figure S7H)
+### Plot with Depth
 nmds_wuni_depth <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
     geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") + 
     geom_point(shape=21, size = 5, color="black", aes(fill=relative_depth)) +
@@ -238,7 +238,7 @@ alpha.div.metadata2$Loc_sec <- gsub('_',' ', alpha.div.metadata2$Loc_sec)
 ordi_data <- merge(alpha.div.metadata2, ordi.scores, by = c('Sample_abbrev'))
 ordi_data$Loc_sec <- factor(ordi_data$Loc_sec, ordered = TRUE, levels = c("Amargosa Valley", "Ash Meadows", "Death Valley", "Frenchman and Yucca Flat", "Pahute Mesa", "Rainier Mesa", "Spring Mountains", "Oasis Valley"))
 
-### Plot NMDS UniFrac (Figure 3A, Figure S6A and S6C)
+### Plot NMDS UniFrac (Figure 4A)
 ### Calculate the hulls for each group
 hull <- ordi_data %>%
   group_by(Loc_sec) %>%
@@ -256,7 +256,7 @@ nmds_uni_hull <- ggplot(ordi_data, aes(x=MDS1, y = MDS2)) +
 
 nmds_uni_hull_label <- nmds_uni_hull + geom_label_repel(aes(label = Sample_abbrev), box.padding = 0.35, point.padding = 0.5, segment.color = 'grey50')
 
-##==================== Plot both NMDS (Figure 3, S6)
+##==================== Plot both NMDS (Figure 4)
 both <- plot_grid(nmds_uni_hull + theme(legend.position="none"),
                  nmds_whull + theme(legend.position="none"), 
                  ncol=2, align = "v", axis="b")
@@ -426,7 +426,7 @@ rpca$data$ProportionExplained[3]
 xaxis_text <- paste("PC1: 72.5%")
 yaxis_text <- paste("PC2: 27.5%")
 
-### Plot ordination (Figure S8A; subset of samples Figure S8C)
+### Plot ordination (Figure S7)
 #### Calculate the hulls for each group
 hull <- rpca_data_num %>%
   group_by(Loc_sec) %>%
@@ -445,7 +445,7 @@ rpca_hull <- ggplot(rpca_data_num, aes(x=PC1, y = PC2)) +
 save_file <- paste("RPCA_draft.svg", sep="")
 ggsave(save_file, path = deicode, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
 
-### Plot ordination (Figure S8B)
+### Plot ordination (Figure S7)
 #### Calculate the hulls for each group
 hull <- rpca_data_num %>%
   group_by(Sequence_batch) %>%
@@ -497,7 +497,7 @@ ordi_data <- merge(alpha.div.metadata2, ordi.scores, by = c('Sample_abbrev'))
 ordi_data$Loc_sec <- gsub("_", " ", ordi_data$Loc_sec)
 ordi_data$Loc_sec <- factor(ordi_data$Loc_sec, ordered = TRUE, levels = c("Amargosa Valley", "Ash Meadows", "Death Valley", "Frenchman and Yucca Flat", "Pahute Mesa", "Rainier Mesa", "Spring Mountains", "Oasis Valley"))
 
-### Plot ordination (Figure S8D; subset of samples Figure S8F)
+### Plot ordination (Figure S7)
 #### Calculate the hulls for each group
 hull <- ordi_data %>%
   group_by(Loc_sec) %>%
@@ -517,7 +517,7 @@ ordi_clr
 save_file <- paste("PCoA_clr_draft.svg", sep="")
 ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
 
-### Plot ordination (Figure S8E)
+### Plot ordination (Figure S7)
 # Calculate the hulls for each group
 hull <- ordi_data %>%
   group_by(Sequence_batch) %>%
@@ -568,7 +568,7 @@ ordi_data <- merge(alpha.div.metadata2, ordi.scores, by = c('Sample_abbrev'))
 ordi_data$Loc_sec <- gsub("_", " ", ordi_data$Loc_sec)
 ordi_data$Loc_sec <- factor(ordi_data$Loc_sec, ordered = TRUE, levels = c("Amargosa Valley", "Ash Meadows", "Death Valley", "Frenchman and Yucca Flat", "Pahute Mesa", "Rainier Mesa", "Spring Mountains", "Oasis Valley"))
 
-### Plot ordination (Figure S8G; subset of samples Figure S8I)
+### Plot ordination (Figure S7)
 #### Calculate the hulls for each group
 hull <- ordi_data %>%
   group_by(Loc_sec) %>%
@@ -588,7 +588,7 @@ ordi_philr
 save_file <- paste("PCoA_philr_draft.svg", sep="")
 ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
 
-### Plot ordination (Figure S8H)
+### Plot ordination (Figure S7)
 #### Calculate the hulls for each group
 hull <- ordi_data %>%
   group_by(Sequence_batch) %>%
@@ -608,7 +608,7 @@ ordi_philr_Seq
 save_file <- paste("PCoA_philr_draft_sequenceBatch.svg", sep="")
 ggsave(save_file, path = beta, scale = 1, width = 9.5, height = 5, units = c("in"), dpi = 300)
 
-## Combine for Figure S8
+## Combine for Figure S7
 both <- plot_grid(rpca_hull + theme(legend.position="none"),
                  rpca_hull_Seq + theme(legend.position="none"),
                  rpca_hull_sub + theme(legend.position="none"),

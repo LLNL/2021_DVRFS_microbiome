@@ -1,5 +1,5 @@
 #  08. Ecological Process
-## Figure 6, Table S8
+## Figure 6, Figure S2, Table S8
 
 ## Links to references
 ### https://github.com/danczakre/ShaleViralEcology
@@ -133,7 +133,7 @@ for(i in phy_objs) {
     }
 }
 
-## calculate mantel correlogram (Figure S10)
+## calculate mantel correlogram (Figure S2)
 paste("PMOV", Sys.time(), sep=" ")
 mantel_PMOV <- mantel.correlog(dist_weight_par_PMOV, phy.dist_PMOV, r.type="pearson", nperm=999, mult="bonferroni", progressive=TRUE, n.class=50, cutoff=FALSE)
 
@@ -680,7 +680,7 @@ heatmap_RCBC
 save_file_plot <- paste("heatmap_RCBC.svg", sep="")
 ggsave(save_file_plot, heatmap_RCBC, path = determ, scale = 1, width = 15, height = 10, units = c("in"), dpi = 300)
 
-# Final plot (Figure 5), manually combine the upper and lower triangles and make the legends nice
+# Final plot (Figure 6), manually combine the upper and lower triangles and make the legends nice
 
 
 ## Plot ratios
@@ -699,7 +699,7 @@ all1$Loc_sec <- gsub('and','&', all1$Loc_sec)
 all1$Loc_sec <- factor(all1$Loc_sec, ordered = TRUE, levels = c("Oasis Valley", "Pahute Mesa", "Rainier Mesa", "Frenchman & Yucca Flat", "Amargosa Valley", "Ash Meadows", "Spring Mountains", "Death Valley"))
 all1$Combo_interp <- factor(all1$Combo_interp, ordered = TRUE, levels = c("Variable Selection", "Homogeneous Selection", "Homogenizing Dispersal", "Dispersal Limitation + Drift", "Undominated"))
 
-### Plot box plot for between communities processes (Figure 5 inset)
+### Plot box plot for between communities processes (Figure 6 inset)
 plot_theme <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
     panel.border = element_rect(colour="black", size=1, fill=NA),
     strip.background=element_rect(fill='white', colour='white', size = 0),

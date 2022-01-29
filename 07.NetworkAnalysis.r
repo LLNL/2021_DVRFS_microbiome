@@ -1,5 +1,5 @@
 #  07. Network Analysis
-## Figure 5, Figure S8, Figure S3, Table S7, Table S8
+## Figure 5, Figure S8, Figure S3, Table S6, Table S7
 
 ## Links to references
 ### https://github.com/zdk123/SpiecEasi
@@ -70,7 +70,7 @@ plot(ig.mb.b, layout=am.coord, vertex.size=vsize, vertex.label=NA, main="MB-BSTA
 plot(ig.gl, layout=am.coord, vertex.size=vsize, vertex.label=NA, main="Glasso-STARS")
 plot(ig.gl.b, layout=am.coord, vertex.size=vsize, vertex.label=NA, main="Glasso-BSTARS")
 
-## Look at the degree statistics from the networks inferred by each method (Figure S12)
+## Look at the degree statistics from the networks inferred by each method (Figure S3)
 dd.gl <- degree.distribution(ig.gl)
 dd.mb <- degree.distribution(ig.mb)
 dd.gl.b <- degree.distribution(ig.gl.b)
@@ -190,12 +190,12 @@ colourCount = length(unique(grph.pos.louvain$membership)) # this will adjust the
 cluster_col = rainbow(colourCount)[as.numeric(cut(grph.pos.louvain$membership,breaks = colourCount))]
 plot(grph.pos, vertex.color=cluster_col, vertex.label=NA, edge.color="black", layout=layout_with_fr(grph.pos))
 
-## Go to Cytoscape (Figure 4, Figure S9)
+## Go to Cytoscape (Figure 5, Figure S8)
 library(RCy3)
 cytoscapePing()
 createNetworkFromIgraph(grph.pos,"myIgraph")
 
-## Plot distribution of OTUs per cluster (Figure 4, Figure S9)
+## Plot distribution of OTUs per cluster (Figure 5, Figure S8)
 otu_loc_clust_df <- read.delim("Data_for_donuts.txt")
 rownames(otu_loc_clust_df) <- otu_loc_clust_df$OTU_ID
 otu_loc_clust_df <- otu_loc_clust_df[,-1]

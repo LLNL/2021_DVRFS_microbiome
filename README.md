@@ -1,4 +1,4 @@
-These scripts (IM#: LLNL-CODE-823962) document the code used to analyze the Death Valley Regional Flow System (DVRFS) microbial community for a manuscript titled "Subsurface Planktonic Microbial Communities Reflect Regional-Scale Groundwater Hydraulic Connectivity" (submitted). The R packages used for this manuscript can be found in the file "Packages_and_Paths_microbe.r". The associated scripts for figures/tables in the manuscript are:
+These scripts (IM#: LLNL-CODE-823962) document the code used to analyze the Death Valley Regional Flow System (DVRFS) microbial community for a manuscript titled "Subsurface Microbial Communities Reflect Regional-Scale Groundwater Hydraulic Connectivity" (submitted). The R packages used for this manuscript can be found in the file "Packages_and_Paths_microbe.r". The associated scripts for figures/tables in the manuscript are:
 
 - 01.Dada2.r : Table S4<br>
 - 02.FilteringOTUs.r : Table S11; Figure S1<br>

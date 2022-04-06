@@ -13,6 +13,14 @@ spiec <- file.path(paste(path_phy, "/SPIEC-EASI", sep=""))
 dir.create(spiec, showWarnings=FALSE)
 setwd(spiec)
 
+## remove OV1 and OV2
+obj_ps_noOV <- subset_samples(obj_ps, Loc_sec!="Oasis_Valley")
+
+## remove OTUs found majority in Oasis Valley (calculated by: max count in OV / max count in rest of sites > 0.7)
+badTaxa <- c('OTU_21', 'OTU_28', 'OTU_33', 'OTU_52', 'OTU_339', 'OTU_97', 'OTU_207', 'OTU_1766', 'OTU_4946', 'OTU_5369', 'OTU_645', 'OTU_5863', 'OTU_194', 'OTU_1164', 'OTU_5465', 'OTU_5306', 'OTU_251', 'OTU_5961')
+goodTaxa <- setdiff(taxa_names(obj_ps_noOV), badTaxa)
+obj_ps_noOV <- prune_taxa(goodTaxa, obj_ps_noOV)
+
 ## Retrieve the 'Common OTUs'
 obj_ps_filt3cv = filter_taxa(obj_ps, function(x) sd(x)/mean(x) > 3.0, TRUE) #Filter the taxa using a cutoff of 3.0 for the Coefficient of Variation
 obj_ps_filt3cv = filter_taxa(obj_ps_filt3cv, function(x) sum(x > 1) > (0.05*length(x)), TRUE) #Remove taxa not seen more than 1 times in at least 5% of the samples (about n=2).

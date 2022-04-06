@@ -5,7 +5,7 @@
 ### Martino, C.; Morton, J. T.; Marotz, C. A.; Thompson, L. R.; Tripathi, A.; Knight, R.; Zengler, K. A Novel Sparse Compositional Technique Reveals Microbial Perturbations. mSystems 2019, 4 (1). https://doi.org/10.1128/mSystems.00016-19.
 ### Gloor, G. B.; Macklaim, J. M.; Pawlowsky-Glahn, V.; Egozcue, J. J. Microbiome Datasets Are Compositional: And This Is Not Optional. Front. Microbiol. 2017, 8. https://doi.org/10.3389/fmicb.2017.02224.
 ### Silverman, J. D.; Washburne, A. D.; Mukherjee, S.; David, L. A. A Phylogenetic Transform Enhances Analysis of Compositional Microbiota Data. eLife 2017, 6, e21887. https://doi.org/10.7554/eLife.21887.
-
+### https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca_examples
 
 ## Set Path
 beta <- file.path(paste(path_phy, "/Beta_diversity", sep=""))
@@ -334,6 +334,207 @@ permutest(betadisper(uwUF.dist, metadata_stats$Loc_sec), pairwise = TRUE)
 
 ### ANOSIM for categorical variables (change the variable)
 anosim(wUF.dist, metadata_stats$tritium_BqL_fct, permutations = 999)
+
+##==================== CCA
+### Prepare metadata
+CC_metadata <- alpha.div.metadata2
+
+# Remove Oasis Valley and variables correlated with other variables (spearman's rho > 0.7); only keep geochemical-type variables
+CC_metadata <- CC_metadata[!grepl("Oasis_Valley", CC_metadata$Loc_sec),]
+CC_metadata$Sr_mgL <- NULL
+CC_metadata$Depth_m <- NULL
+CC_metadata$Depth_from_water_table_m <- NULL
+CC_metadata.num <- select_if(CC_metadata, is.numeric) # only keep numeric variables
+CC_metadata.num.std <- decostand(CC_metadata.num, method='standardize') # standardize the variables
+str(CC_metadata.num.std)
+summary(CC_metadata.num.std)
+X <- CC_metadata.num.std
+colnames(X)
+
+### Prepare otu table
+# remove OV samples
+obj_ps_sub <- subset_samples(obj_ps, Sample_abbrev != "OV1" & Sample_abbrev != "OV2")
+
+# remove zero OTU count
+obj_ps_sub <- prune_taxa(taxa_sums(obj_ps_sub) > 0, obj_ps_sub)
+obj_ps_sub
+
+# Obtain the OTU table
+library(QsRutils)
+Y.counts <- veganotu(obj_ps_sub)
+rownames(Y.counts)
+
+### Test whether species composition is heterogeneous or homogeneous
+DCA <- decorana(log1p(Y.counts))
+DCA
+# Note: axis lengths are > 4: heterogeneous, unimodal method (CCA)
+
+### Conduct CCA
+spe.log <- log1p(Y.counts)
+spe.hell <- decostand(spe.log, 'hell')
+
+# CCA on all the data
+cca <- cca(spe.hell ~ ., data = X)
+cca
+
+# CCA on just microbial data to confirm the axis variance without geochemical data
+cca_noData <- cca(spe.hell)
+cca_noData
+
+# Get the contribution of each axis to the variance
+constrained_eig <- cca$CCA$eig/cca$tot.chi*100
+unconstrained_eig <- cca$CA$eig/cca$tot.chi*100
+expl_var <- c(constrained_eig, unconstrained_eig)
+barplot (expl_var[1:20], col = c(rep ('red', length (constrained_eig)), rep ('black', length (unconstrained_eig))),
+         las = 2, ylab = '% variation')
+  
+# Quick plot
+ordiplot(cca)
+
+# R2
+R2.obs <- RsquareAdj(cca)$r.squared
+R2.obs
+
+# Is the CCA worth to interpret? Permutation test of statistical significance
+test_all <- anova(cca)
+test_all.adj <- test_all
+test_all.adj$`Pr(>F)` <- p.adjust(test_all$`Pr(>F)`, method = 'holm')
+test_all.adj
+
+# Are the axis significant?
+test_axis <- anova(cca, by="axis")
+test_axis.adj <- test_axis
+test_axis.adj$`Pr(>F)` <- p.adjust(test_axis$`Pr(>F)`, method = 'holm')
+test_axis.adj
+
+# Are the geochemical variables significant?
+test_margin <- anova(cca, by="margin")
+test_margin.adj <- test_margin
+test_margin.adj$`Pr(>F)` <- p.adjust(test_margin$`Pr(>F)`, method = 'holm')
+test_margin.adj
+
+# Perform forward and backward selection of explanatory variables
+cca1 <- cca(spe.hell ~ ., data=X) # full model
+cca0 <- cca(spe.hell ~ 1, data=X) # intercept-only (null) model
+
+step.env <- ordistep(cca0, scope=formula(cca1), direction='both', permutations=1000)
+step.env
+
+# What are the significant variables after selection?
+step.env$anova
+step.env_adj <- step.env
+step.env_adj$anova$`Pr(>F)` <- p.adjust(step.env$anova$`Pr(>F)`, method = 'holm', n = ncol(X))
+step.env_adj$anova
+
+# Perform CCA on the selected variables
+cca.lim <- cca(formula = spe.hell ~ Temp_C + Ca_mgL + NO3_mgL + Na_mgL + TOC_mgCL, data = X)
+cca.lim
+
+# Get the contribution of each axis to the variance
+constrained_eig <- cca.lim$CCA$eig/cca.lim$tot.chi*100
+unconstrained_eig <- cca.lim$CA$eig/cca.lim$tot.chi*100
+expl_var <- c(constrained_eig, unconstrained_eig)
+barplot (expl_var[1:20], col = c(rep ('red', length (constrained_eig)), rep ('black', length (unconstrained_eig))),
+         las = 2, ylab = '% variation')
+
+constrained_eig
+
+# Quick plot
+ordiplot(cca.lim)
+
+# R2
+R2.obs <- RsquareAdj(cca.lim)$r.squared
+R2.obs
+
+# Is the CCA worth to interpret? Permutation test of statistical significance
+test_all <- anova(cca.lim)
+test_all.adj <- test_all
+test_all.adj$`Pr(>F)` <- p.adjust(test_all$`Pr(>F)`, method = 'holm')
+test_all.adj
+
+# Are the axis significant?
+test_axis <- anova(cca.lim, by="axis")
+test_axis.adj <- test_axis
+test_axis.adj$`Pr(>F)` <- p.adjust(test_axis$`Pr(>F)`, method = 'holm')
+test_axis.adj
+
+# Are the geochemical variables significant?
+test_margin <- anova(cca.lim, by="margin")
+test_margin.adj <- test_margin
+test_margin.adj$`Pr(>F)` <- p.adjust(test_margin$`Pr(>F)`, method = 'holm')
+test_margin.adj
+
+# obtain site scores
+CC_metadata$Label <- rownames(CC_metadata)
+sit <- merge(CC_metadata, fortify(cca.lim, axes = 1:2, display = c("wa")), by="Label")
+rownames(sit) <- sit$Label
+sit$Score <- NULL
+sit$Label <- NULL
+head(sit)
+
+# obtain biplot vectors
+vec <- fortify(cca.lim, axes = 1:2, display = c("bp"))
+vec$Score <- NULL
+vec$Label <- gsub('Temp_C', 'Temp (ºC)', vec$Label)
+vec$Label <- gsub('_mgL', ' (mg/L)', vec$Label)
+vec$Label <- gsub('_mgCL', ' (mg-C/L)', vec$Label)
+vec
+
+### Plot figure (Figure 4C)
+# Set up theme
+plot_theme <- theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
+    panel.border = element_rect(colour="black", size=1, fill=NA),
+    strip.background=element_rect(fill='white', colour='white', size = 0),
+    strip.text = element_text(face="bold", size=20),
+    panel.spacing.x=unit(0.5, "lines"),
+    panel.grid.major = element_line(size = 0),
+    panel.grid.minor = element_line(size = 0),
+    axis.text = element_text(size=15, colour="black"),
+    axis.title = element_text(face="bold", size=20),
+    legend.position="right",
+    legend.key = element_rect(fill = "transparent"),
+    legend.title = element_text(face="bold", size=20),
+    legend.text = element_text(size=20),
+    legend.background = element_rect(fill = "transparent"),
+    legend.box.background = element_rect(fill = "transparent", colour = NA))
+
+plot_guide <- guides(fill = guide_legend(order=1, override.aes = list(shape = 21, alpha=1, size = 5)),
+    shape = guide_legend(order=2, override.aes = list(size = 5, color="black", alpha=1)),
+    color = "none")
+
+# Calculate the hulls for each group
+hull <- sit %>%
+  group_by(rock_type) %>%
+  slice(chull(CCA1, CCA2))
+
+# use these to adjust length of arrows and position of arrow labels
+adj.vec <- 2
+adj.txt <- 2.1
+
+cca_fig <- ggplot(sit, aes(x=CCA1, y = CCA2)) +
+    geom_hline(yintercept=0, size=.2, linetype = "dashed", color="black") + geom_vline(xintercept=0, size=.2, linetype = "dashed", color="black") +
+
+    # points and polygons
+    geom_point(size=3, color="black", aes(fill=Loc_sec, shape=rock_type)) +
+    geom_polygon(data = hull, alpha = 0.1, color="black", aes(linetype=rock_type)) +
+
+    # vectors
+    geom_segment(data=vec, inherit.aes=F, mapping=aes(x=0, y=0, xend=adj.vec*CCA1, yend=adj.vec*CCA2), arrow=arrow(length=unit(0.2, 'cm'))) +
+    geom_text(data=vec, size=6, inherit.aes=F, mapping=aes(x=adj.txt*CCA1, y=adj.txt*CCA2, label=Label)) +
+
+    # make plot pretty
+    xlab(paste("CCA1 (4.2%)")) +
+    ylab(paste("CCA2 (3.8%)")) +
+    scale_shape_manual(name = "Rock Type", values=c(22, 24)) +
+    scale_fill_lancet(name = "Location") +
+    scale_linetype_manual(name="", values=c(2,3)) +
+    #geom_label_repel(aes(label = Sample_abbrev), box.padding = 0.35, point.padding = 0.5, segment.color = 'grey50') +
+    plot_theme + plot_guide
+
+cca_fig
+
+save_file <- paste("CCA_draft.pdf", sep="")
+ggsave(save_file, path = beta, scale = 1, width = 10, height = 5, units = c("in"), dpi = 300)
 
 ##==================== DEICODE RPCA (repeat this for subset of samples obj_ps_sub)
 deicode <- file.path(paste(beta, "/deicode_RPCA", sep=""))

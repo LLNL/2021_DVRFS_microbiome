@@ -87,23 +87,30 @@ ggsave("prevalencethreshold.zoom.all.noncontam.otu97.pdf", path = path_phy, scal
 ### Check the plots. No need for prevalence filtering
 
 ## Rarefaction curve (Figure S1)
-rarefraction.curve <- ggrare(ps.noncontam97.filt, step = 500, se = TRUE, label="Sample_abbrev")
+# Note: in phyloseq_inext script, make global variables out of resl and samplabs
+rarefaction_inext <- phyloseq_inext(ps.noncontam97.filt, Q = 0, curve_type = "diversity", correct_singletons = FALSE, endpoint = NULL, knots = 40,multithread = FALSE, show_CI = TRUE, show_sample_labels = TRUE, show_plot = TRUE, justDF = FALSE, add_raw_data = TRUE)
 
-rarefraction.curve.plot <- rarefraction.curve +
-facet_wrap(~Loc_sec, scales="free_y") +
-#scale_x_continuous(limits=c(0,150000), breaks=c(50000,100000,150000)) +
-theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
-    panel.border = element_rect(colour="black", size=1, fill=NA),
-    strip.background=element_rect(fill='white', colour='white'),
-    strip.text = element_text(face="bold", size=10),
-    panel.grid.major = element_line(size = 0),
-    panel.grid.minor = element_line(size = 0),
-    axis.text = element_text(face="bold", size=10, colour="black"),
-    axis.title = element_text(face="bold", size=10),
-    legend.position="bottom",
-    legend.key = element_rect(fill = "white"),
-    legend.title = element_blank()) +
-guides(color=FALSE)
+pp <- ggplot(data = rarefaction_inext$data, aes(x = m, y = qD, group = SampleID)) +
+    geom_line(data = resl$interpolated, linetype = "solid") +
+    geom_line(data = resl$extrapolated, linetype = "dashed") +
+    geom_point(data = resl$observed, size = 2) +
+    geom_ribbon(aes(ymin = qD.LCL, ymax = qD.UCL, color = NULL), alpha = 0.2) +
+    facet_wrap(~Loc_sec, scales="free") +
+    geom_text(data=samplabs, aes(label=SampleID, x=SampSize, y=MaxQD), size = 4, hjust = -0.5) +
+    theme(panel.background = element_rect(fill = "white", colour = "black", size = 1, linetype = "solid"),
+      panel.border = element_rect(colour="black", size=1, fill=NA),
+      strip.background=element_rect(fill='white', colour='white'),
+      strip.text = element_text(face="bold", size=10),
+      panel.grid.major = element_line(size = 0),
+      panel.grid.minor = element_line(size = 0),
+      axis.text = element_text(face="bold", size=10, colour="black"),
+      axis.title = element_text(face="bold", size=10),
+      legend.position="bottom",
+      legend.key = element_rect(fill = "white"),
+      legend.title = element_blank()) +
+    guides(color="none")
+
+pp
 
 ggsave("Rarefraction_curve_otu97.svg", path = path_phy, scale = 1, width = 10, height = 10, units = c("in"), dpi = 300)
 

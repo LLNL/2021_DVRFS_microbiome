@@ -1,4 +1,4 @@
-These scripts (IM#: LLNL-CODE-823962) document the code used to analyze the Death Valley Regional Flow System (DVRFS) microbial community for a manuscript titled "Subsurface Microbial Communities as a Tool for Characterizing Regional-Scale Groundwater Flow" (submitted). The R packages used for this manuscript can be found in the file "Packages_and_Paths_microbe.r". The associated scripts for figures/tables in the manuscript are:
+These scripts (IM#: LLNL-CODE-823962) document the code used to analyze the Death Valley Regional Flow System (DVRFS) microbial community for a <a href="https://www.sciencedirect.com/science/article/pii/S0048969722038657" target="_blank">manuscript</a> titled "Subsurface microbial communities as a tool for characterizing regional-scale groundwater flow". The R packages used for this manuscript can be found in the file "Packages_and_Paths_microbe.r". The associated scripts for figures/tables in the manuscript are:
 
 - 01.Dada2.r : Table S4<br>
 - 02.FilteringOTUs.r : Table S11; Figure S1<br>
@@ -10,7 +10,7 @@ These scripts (IM#: LLNL-CODE-823962) document the code used to analyze the Deat
 - 08.EcologicalProcess.r : Figure 6, Figure S2, Table S8 <br>
 - Geochem.r : Figure 2, Table S2, Table S3, Table S9, Table S10<br>
 
-Merino, N., Jackson, T.R., Campbell, J.H., Kersting, A.B., Sackett, J., Fisher, J.C., Bruckner, J.C. Zavarin, M., Hamilton-Brehm, S.D., Moser, D.P. (2022)
+Merino, N., Jackson, T.R., Campbell, J.H., Kersting, A.B., Sackett, J., Fisher, J.C., et al. (2022) Subsurface microbial communities as a tool for characterizing regional-scale groundwater flow. Science of The Total Environment 842: 156768. 10.1016/j.scitotenv.2022.156768
 
 Open Source Distribution, under the terms of the LGPL, v3.0 license.<br>
 These code will not be updated once the manuscript has been accepted. 
